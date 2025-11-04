@@ -13,13 +13,13 @@ st.set_page_config(
 )
 
 # Initialize Gemini API
-GEMINI_API_KEY = "AIzaSyBqNjD2-uEdMrMBsDb14-93_SE88cHiIEY"
+GEMINI_API_KEY = "AIzaSyCKeyiKySCVsqPYKJFhfWOlkyky3L8MmVY"
 
 def initialize_gemini():
     genai.configure(api_key=GEMINI_API_KEY)
     return {
-        'vision': genai.GenerativeModel('gemini-1.5-pro-latest'),
-        'text': genai.GenerativeModel('gemini-1.5-pro-latest')
+        'vision': genai.GenerativeModel('gemini-2.5-flash'),
+        'text': genai.GenerativeModel('gemini-2.5-flash')
     }
 
 # Session state initialization
@@ -206,6 +206,7 @@ def main():
 if __name__ == "__main__":
 
     main()
+
 
 
 
