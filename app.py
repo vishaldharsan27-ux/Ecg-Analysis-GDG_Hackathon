@@ -16,7 +16,7 @@ st.set_page_config(
 GEMINI_API_KEY = "AIzaSyBqNjD2-uEdMrMBsDb14-93_SE88cHiIEY"
 
 def initialize_gemini():
-    genai.configure(api_key=GEMINI_API_KEY, api_endpoint="https://generativelanguage.googleapis.com/v1");
+    genai.configure(api_key=GEMINI_API_KEY, api_endpoint="https://generativelanguage.googleapis.com/v1")
     return {
         'vision': genai.GenerativeModel('gemini-1.5-pro-latest'),
         'text': genai.GenerativeModel('gemini-1.5-pro-latest')
@@ -206,4 +206,5 @@ def main():
 if __name__ == "__main__":
 
     main()
+
 
