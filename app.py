@@ -18,8 +18,8 @@ GEMINI_API_KEY = "AIzaSyBqNjD2-uEdMrMBsDb14-93_SE88cHiIEY"
 def initialize_gemini():
     genai.configure(api_key=GEMINI_API_KEY)
     return {
-        'vision': genai.GenerativeModel('gemini-1.5-pro'),
-        'text': genai.GenerativeModel('gemini-1.5-pro')
+        'vision': genai.GenerativeModel('gemini-1.5-pro-latest'),
+        'text': genai.GenerativeModel('gemini-1.5-pro-latest')
     }
 
 # Session state initialization
@@ -204,4 +204,5 @@ def main():
                         st.error(f"Chat error: {str(e)}")
 
 if __name__ == "__main__":
+
     main()
