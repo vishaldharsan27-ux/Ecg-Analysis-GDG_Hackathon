@@ -85,7 +85,7 @@ def main():
                         5. Clinical Interpretation
                         6. Recommendations
                         
-                        Use medical terminology with layman's explanations."""
+                        Use medical terminology with only main points"""
                         
                         response = models['vision'].generate_content([prompt, image])
                         analysis = {
@@ -206,6 +206,7 @@ def main():
 if __name__ == "__main__":
 
     main()
+
 
 
 
