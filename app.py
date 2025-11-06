@@ -1,13 +1,9 @@
 import streamlit as st
 import google.generativeai as genai
 from PIL import Image
-import firebase_admin
-from firebase_admin import credentials, db, storage
 import os
 import json
 from datetime import datetime
-import base64
-from io import BytesIO
 
 # Set page configuration
 st.set_page_config(
@@ -19,101 +15,12 @@ st.set_page_config(
 # Initialize Gemini API
 GEMINI_API_KEY = "AIzaSyCKeyiKySCVsqPYKJFhfWOlkyky3L8MmVY"
 
-# Firebase Configuration
-FIREBASE_CONFIG = {
-    "apiKey": "AIzaSyBd-5hfIw96nH8lEsjwWZH3Ov2f9tbESJ4",
-    "authDomain": "heart-disease-detector-41045.firebaseapp.com",
-    "databaseURL": "https://heart-disease-detector-41045-default-rtdb.firebaseio.com/",
-    "projectId": "heart-disease-detector-41045",
-    "storageBucket": "heart-disease-detector-41045.appspot.com",
-    "messagingSenderId": "206192293331",
-    "appId": "1:206192293331:web:0aa330860ceb3c16932b26"
-}
-
-def initialize_firebase():
-    """Initialize Firebase Admin SDK"""
-    if not firebase_admin._apps:
-        # For Streamlit Cloud or production, use service account JSON
-        # For local testing, you can use the config directly
-        try:
-            # Try to load service account key if available
-            cred = credentials.Certificate('serviceAccountKey.json')
-            firebase_admin.initialize_app(cred, {
-                'databaseURL': FIREBASE_CONFIG['databaseURL'],
-                'storageBucket': FIREBASE_CONFIG['storageBucket']
-            })
-        except:
-            # Fallback: Initialize without credentials (works for public read/write rules)
-            firebase_admin.initialize_app(options={
-                'databaseURL': FIREBASE_CONFIG['databaseURL'],
-                'storageBucket': FIREBASE_CONFIG['storageBucket']
-            })
-
 def initialize_gemini():
     genai.configure(api_key=GEMINI_API_KEY)
     return {
         'vision': genai.GenerativeModel('gemini-2.5-flash'),
         'text': genai.GenerativeModel('gemini-2.5-flash')
     }
-
-def save_analysis_to_firebase(analysis_data, image_file):
-    """Save ECG analysis to Firebase Realtime Database"""
-    try:
-        # Convert image to base64 for storage
-        buffered = BytesIO()
-        img = Image.open(image_file)
-        img.save(buffered, format="PNG")
-        img_str = base64.b64encode(buffered.getvalue()).decode()
-        
-        # Create analysis record
-        analysis_record = {
-            'timestamp': analysis_data['timestamp'],
-            'image_name': analysis_data['image'],
-            'image_base64': img_str[:1000],  # Store thumbnail (first 1000 chars)
-            'report': analysis_data['report'],
-            'patient_id': st.session_state.get('current_patient_id', 'unknown'),
-            'analysis_type': 'ECG'
-        }
-        
-        # Push to Firebase
-        ref = db.reference('ecg_analyses')
-        new_analysis_ref = ref.push(analysis_record)
-        
-        st.success(f"✅ Analysis saved to database with ID: {new_analysis_ref.key}")
-        return new_analysis_ref.key
-    except Exception as e:
-        st.error(f"Failed to save to Firebase: {str(e)}")
-        return None
-
-def load_analyses_from_firebase(patient_id=None):
-    """Load ECG analyses from Firebase"""
-    try:
-        ref = db.reference('ecg_analyses')
-        if patient_id:
-            analyses = ref.order_by_child('patient_id').equal_to(patient_id).get()
-        else:
-            analyses = ref.order_by_child('timestamp').limit_to_last(10).get()
-        
-        if analyses:
-            return [{'id': k, **v} for k, v in analyses.items()]
-        return []
-    except Exception as e:
-        st.error(f"Failed to load from Firebase: {str(e)}")
-        return []
-
-def save_chat_to_firebase(chat_message, analysis_id):
-    """Save chat message to Firebase"""
-    try:
-        chat_record = {
-            'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            'analysis_id': analysis_id,
-            'role': chat_message['role'],
-            'content': chat_message['content']
-        }
-        ref = db.reference('ecg_chats')
-        ref.push(chat_record)
-    except Exception as e:
-        st.error(f"Failed to save chat: {str(e)}")
 
 # Session state initialization
 if 'analysis_history' not in st.session_state:
@@ -122,38 +29,12 @@ if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
 if 'current_analysis' not in st.session_state:
     st.session_state.current_analysis = None
-if 'current_analysis_id' not in st.session_state:
-    st.session_state.current_analysis_id = None
-if 'current_patient_id' not in st.session_state:
-    st.session_state.current_patient_id = None
 
 # Main function
 def main():
-    # Initialize Firebase and Gemini
-    initialize_firebase()
     models = initialize_gemini()
     
     st.title("Advanced ECG Analysis Suite")
-    
-    # Patient ID input (sidebar)
-    with st.sidebar:
-        st.header("Patient Information")
-        patient_id = st.text_input("Patient ID (optional)", value=st.session_state.current_patient_id or "")
-        if patient_id:
-            st.session_state.current_patient_id = patient_id
-        
-        st.markdown("---")
-        st.subheader("Firebase Status")
-        st.success("✅ Connected to Firebase")
-        
-        if st.button("Load Past Analyses from Database"):
-            with st.spinner("Loading from Firebase..."):
-                loaded = load_analyses_from_firebase(patient_id if patient_id else None)
-                if loaded:
-                    st.session_state.analysis_history = loaded
-                    st.success(f"Loaded {len(loaded)} analyses")
-                else:
-                    st.info("No analyses found")
     
     # Tab layout
     tab1, tab2, tab3 = st.tabs(["ECG Analysis", "Trend Analysis", "ECG Chatbot"])
@@ -212,15 +93,10 @@ def main():
                             'image': uploaded_file.name,
                             'report': response.text
                         }
-                        
-                        # Save to Firebase
-                        analysis_id = save_analysis_to_firebase(analysis, uploaded_file)
-                        
                         st.session_state.current_analysis = analysis
-                        st.session_state.current_analysis_id = analysis_id
                         st.session_state.analysis_history.append(analysis)
                         
-                        st.success("Analysis Complete & Saved to Database")
+                        st.success("Analysis Complete")
                         st.markdown("---")
                         st.subheader("ECG Analysis Report")
                         st.markdown(response.text)
@@ -240,7 +116,7 @@ def main():
                 st.subheader("Select Past Analysis")
                 past_selection = st.selectbox(
                     "Choose previous report:",
-                    options=[f"{i+1}: {item['timestamp']} - {item.get('image', item.get('image_name', 'Unknown'))}" 
+                    options=[f"{i+1}: {item['timestamp']} - {item['image']}" 
                             for i, item in enumerate(st.session_state.analysis_history)],
                     key="past_select"
                 )
@@ -262,7 +138,7 @@ def main():
                         
                         comparison_prompt = f"""Compare these two ECG reports and identify clinically significant changes:
                         
-                        PAST REPORT ({st.session_state.analysis_history[past_idx]['timestamp']}):
+                        PAST REPORT ({(st.session_state.analysis_history[past_idx]['timestamp'])}):
                         {past_report}
                         
                         CURRENT REPORT:
@@ -297,11 +173,6 @@ def main():
                 with st.chat_message("user"):
                     st.markdown(prompt)
                 
-                # Save user message to Firebase
-                if st.session_state.current_analysis_id:
-                    save_chat_to_firebase({"role": "user", "content": prompt}, 
-                                        st.session_state.current_analysis_id)
-                
                 context = f"""
                 Current ECG Analysis:
                 {st.session_state.current_analysis['report']}
@@ -326,18 +197,12 @@ def main():
                 with st.spinner("Generating response..."):
                     try:
                         response = models['text'].generate_content(full_prompt)
-                        assistant_message = {"role": "assistant", "content": response.text}
-                        st.session_state.chat_history.append(assistant_message)
-                        
-                        # Save assistant message to Firebase
-                        if st.session_state.current_analysis_id:
-                            save_chat_to_firebase(assistant_message, 
-                                                st.session_state.current_analysis_id)
-                        
+                        st.session_state.chat_history.append({"role": "assistant", "content": response.text})
                         with st.chat_message("assistant"):
                             st.markdown(response.text)
                     except Exception as e:
                         st.error(f"Chat error: {str(e)}")
 
 if __name__ == "__main__":
+
     main()
