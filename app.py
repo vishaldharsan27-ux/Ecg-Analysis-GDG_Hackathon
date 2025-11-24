@@ -203,7 +203,8 @@ def main():
                     except Exception as e:
                         st.error(f"Chat error: {str(e)}")
 
-if _name_ == "__main__":
+if __name__ == "__main__":
 
     main()
+
 
