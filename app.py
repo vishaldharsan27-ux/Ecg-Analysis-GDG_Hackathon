@@ -8,36 +8,9 @@ from datetime import datetime
 # Set page configuration
 st.set_page_config(
     page_title="Advanced ECG Analyzer",
-    page_icon="❤️",
+    page_icon="❤",
     layout="centered"
 )
-
-# REMOVE STREAMLIT GITHUB ICON, FOOTER & MENU
-hide_streamlit_style = """
-    <style>
-    /* Hide GitHub icon in top-right */
-    .stApp a[href*="github"] {
-        display: none !important;
-    }
-
-    /* Hide Streamlit footer */
-    footer {
-        visibility: hidden !important;
-        height: 0 !important;
-    }
-
-    /* Hide top-right menu (3 dots) */
-    #MainMenu {
-        visibility: hidden !important;
-    }
-
-    /* Hide entire Streamlit header */
-    header[data-testid="stHeader"] {
-        display: none !important;
-    }
-    </style>
-"""
-st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 # Initialize Gemini API
 GEMINI_API_KEY = "AIzaSyCKeyiKySCVsqPYKJFhfWOlkyky3L8MmVY"
@@ -230,5 +203,6 @@ def main():
                     except Exception as e:
                         st.error(f"Chat error: {str(e)}")
 
-if __name__ == "__main__":
+if _name_ == "_main_":
+
     main()
