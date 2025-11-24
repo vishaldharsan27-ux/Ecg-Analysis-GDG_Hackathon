@@ -13,7 +13,7 @@ st.set_page_config(
 )
 
 # Initialize Gemini API
-GEMINI_API_KEY = "AIzaSyCKeyiKySCVsqPYKJFhfWOlkyky3L8MmVY"
+GEMINI_API_KEY = "AIzaSyDcSYkVoBZ_4hzFx9CqMgWxSD7VAs1rRVw"
 
 def initialize_gemini():
     genai.configure(api_key=GEMINI_API_KEY)
@@ -206,5 +206,6 @@ def main():
 if __name__ == "__main__":
 
     main()
+
 
 
