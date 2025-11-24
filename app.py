@@ -12,6 +12,16 @@ st.set_page_config(
     layout="centered"
 )
 
+# REMOVE STREAMLIT GITHUB & FOOTER ICONS
+hide_streamlit_style = """
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    [title="View source on GitHub"] {display: none;}
+    </style>
+"""
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
 # Initialize Gemini API
 GEMINI_API_KEY = "AIzaSyCKeyiKySCVsqPYKJFhfWOlkyky3L8MmVY"
 
@@ -148,7 +158,7 @@ def main():
                         1. Summary of key changes
                         2. Clinical significance
                         3. Urgency level
-                        4. Recommended follow-up actions
+                        3. Recommended follow-up actions
                         """
                         
                         comparison = models['text'].generate_content(comparison_prompt)
