@@ -12,12 +12,29 @@ st.set_page_config(
     layout="centered"
 )
 
-# REMOVE STREAMLIT GITHUB & FOOTER ICONS
+# REMOVE STREAMLIT GITHUB ICON, FOOTER & MENU
 hide_streamlit_style = """
     <style>
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    [title="View source on GitHub"] {display: none;}
+    /* Hide GitHub icon in top-right */
+    .stApp a[href*="github"] {
+        display: none !important;
+    }
+
+    /* Hide Streamlit footer */
+    footer {
+        visibility: hidden !important;
+        height: 0 !important;
+    }
+
+    /* Hide top-right menu (3 dots) */
+    #MainMenu {
+        visibility: hidden !important;
+    }
+
+    /* Hide entire Streamlit header */
+    header[data-testid="stHeader"] {
+        display: none !important;
+    }
     </style>
 """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
@@ -158,7 +175,7 @@ def main():
                         1. Summary of key changes
                         2. Clinical significance
                         3. Urgency level
-                        3. Recommended follow-up actions
+                        4. Recommended follow-up actions
                         """
                         
                         comparison = models['text'].generate_content(comparison_prompt)
@@ -214,5 +231,4 @@ def main():
                         st.error(f"Chat error: {str(e)}")
 
 if __name__ == "__main__":
-
     main()
